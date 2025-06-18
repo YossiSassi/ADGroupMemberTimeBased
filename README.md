@@ -1,6 +1,8 @@
 # ADGroupMemberTimeBased
-<b>PowerShell module for managing Time-Based Group Membership - temporarily add/get group members using the TTL optional feature of AD. Includes functions to test the pre-requisites, add a TTL member to a group and get expiration info of temporary member(s).</b><BR><br>
+'Mini-PAM' - <b>PowerShell module for managing Time-Based Group Membership - temporarily add/get group members using the TTL optional feature of AD. Includes functions to test the pre-requisites, add a TTL member to a group and get expiration info of temporary member(s).</b><BR><br>
 The module includes 3 functions / cmdlets:<br>
+The cmdlets <b>Test-ADGroupMemberTimeBasedPreRequisites</b>, <b>Get-ADGroupMemberTimeBased</b> and <b>Get-ADGroupMemberTimeBasedReport</b> do not require special permissions.<br>
+The cmdlet <b>Add-ADGroupMemberTimeBased</b> requires permissions to add member to the group.<br><br>
 ## Test-ADGroupMemberTimeBasedPreRequisites
 <BR>The function validates the pre-requisites in the domain and forest/Configuration-wide, before you can add a time-based group member.<br>
 It checks domain & forest functional levels and verifies that 'Privileged Access Management Feature' is enabled.<br>
@@ -40,4 +42,12 @@ List group members of "Domain Admins", including temporary accounts and their TT
 <br>
 ```
 Get-ADGroupMemberTimeBased -GroupName "domain admins"
+```
+## Get-ADGroupMemberTimeBasedReport
+<br>Gets all temporary members of all Active Directory groups in the domain, and shows the time remaining until the membership expires.<br>
+<br>
+.EXAMPLE<br>
+Get all temporary group members in all Active Directory groups in the domain:<br>
+```
+Get-ADGroupMemberTimeBasedReport
 ```
