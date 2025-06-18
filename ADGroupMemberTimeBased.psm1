@@ -1,5 +1,6 @@
-# PowerShell module for managing Time-Based Group Membership - temporarily get/add group members using the TTL optional feature of AD (Windows2016ForestMode+)
-# Includes functions to test the pre-requisites, adding a time-based member to a group and getting status on temporary member(s) of a group
+# 'Mini-PAM' - PowerShell module for managing Time-Based Group Membership - temporarily get/add group members using the TTL optional feature of AD (Windows2016ForestMode+)
+# Includes functions to test the pre-requisites, adding a time-based member to a group and getting status on temporary member(s) of a group. Also includes a cmdlet to report ALL temporary members of all groups in the domain.
+# Cmdlets Test-ADGroupMemberTimeBasedPreRequisites, Get-ADGroupMemberTimeBased and Get-ADGroupMemberTimeBasedReport do Not require special permissions. The cmdlet Add-ADGroupMemberTimeBased requires permissions to add member to the group.
 # Module Version: 1.0.0
 # Comments to 1nTh35h311 (yossis@protonmail.com)
 
@@ -170,11 +171,15 @@ else
 Add-ADGroupMember -Identity $GroupName -Members $MemberSamAccountName -MemberTimeToLive $(New-TimeSpan -Minutes $TTLinMinutes);
 
 if ($?) {
-    Write-Host "`[x] Successfully added $MemberSamAccountName as Temporary member of group $GroupName" -ForegroundColor Cyan
+    Write-Host "`n[x] Successfully added $MemberSamAccountName as Temporary member of group $GroupName" -ForegroundColor Cyan
 }
-    elseif ($Error[0].exception -like "*parameter*incorrect*") {
-        Write-Warning "[!] An error occured. Ensure the Domain/Forest are setup correctly and TTL enabled/'PAM Feature'.";
-        break
+elseif ($Error[0].exception -like "*parameter*incorrect*") {
+    Write-Warning "[!] An error occured. Ensure the Domain/Forest are setup correctly and TTL enabled/'PAM Feature'.";
+    break
+} 
+else {
+    Write-Warning "[!] $($Error[0].exception.Message)";
+    break
 }
 
 # Get the group members
@@ -192,9 +197,6 @@ if ($TTLMembers)
 	{
 	$TTLMembers | ForEach-Object {
         $MinutesLeft = $($($_.split(",")[0].replace('<TTL=','').replace('>',''))/60);
-        #$Split = $_.Split(",");
-        #$TTLmemberDN = $_.Split(",")[1..$($Split.Count - 1)] -join ',';
-        #$TTLmemberDN
         Write-Host "Account $MemberSamAccountName has $([math]::Round($MinutesLeft,1)) minutes left as member of $GroupName." -ForegroundColor Yellow
     }
   }
@@ -255,12 +257,92 @@ if ($TTLMembers)
         $Split = $_.Split(",");
         $TTLmemberDN = $_.Split(",")[1..$($Split.Count - 1)] -join ',';
         $Object = Get-ADObject -Identity $TTLmemberDN -Properties samaccountname;
-        Write-Host "Account " -NoNewline -ForegroundColor Cyan; Write-Host $($Object.samaccountname) -NoNewline -ForegroundColor Green; Write-Host -NoNewline " ($TTLmemberDN) has " -ForegroundColor Cyan; Write-Host -NoNewline $([math]::Round($SecondsLeft/60,1)) -ForegroundColor Yellow; Write-Host -NoNewline " minutes ($SecondsLeft seconds) until its membership expires in group $GroupName." -ForegroundColor Cyan;
+        Write-Host "Account " -NoNewline -ForegroundColor Cyan; Write-Host $($Object.samaccountname) -NoNewline -ForegroundColor Green; Write-Host -NoNewline " ($TTLmemberDN) has " -ForegroundColor Cyan; Write-Host -NoNewline $([math]::Round($SecondsLeft/60,1)) -ForegroundColor Yellow; Write-Host -NoNewline " minutes ($SecondsLeft seconds) until its membership expires in group $GroupName.`n" -ForegroundColor Cyan;
         Clear-Variable SecondsLeft, Split, TTLmemberDN, Object
     }
   }
 else
     {
-    Write-Host "`[!] No temporary members found for group $GroupName." -ForegroundColor Cyan
+    Write-Host "`n[!] No temporary members found for group $GroupName." -ForegroundColor Cyan
+    }
+}
+
+function Get-ADGroupMemberTimeBasedReport {
+<#
+.DESCRIPTION
+Gets all temporary members of all Active Directory groups in the domain, and shows the time remaining until the membership expires.
+
+ADGroupMemberTimeBased Function: Get-ADGroupMemberTimeBasedReport
+Author: 1nTh35h311 (yossis@protonmail.com, @Yossi_Sassi)
+Version: 1.0.0
+Required Dependencies: ActiveDirectory module
+
+.SYNOPSIS
+Gets all temporary members of all Active Directory groups in the domain, and shows the time remaining until the membership expires.
+
+.EXAMPLE
+Get all temporary group members in all Active Directory groups in the domain:
+
+Get-ADGroupMemberTimeBasedReport
+#>
+
+#Requires -modules ActiveDirectory
+
+# Get the groups
+$Groups = Get-ADGroup -Filter * -Property member –ShowMemberTimeToLive;
+
+if (!$?) {   
+    Write-Warning "[!] An error occured: $($Error[0].exception)";
+    break
+}
+
+if ($Groups) {
+    # Get members with TTL, and their expiring information
+    $TemporaryMembers = @();
+
+    $Groups | ForEach-Object {
+    $GroupName = $_.Name;
+    $GroupCategory = $_.GroupCategory;
+    $GroupDN = $_.distinguishedname;
+
+    # get current group's TTL members, if any
+    $TempTTLmembers = $_ | select -ExpandProperty member | where {$_ -like "*<TTL=*>*"}
+    
+    if ($TempTTLmembers)
+        {
+            $TempTTLmembers | ForEach-Object {
+            $SecondsLeft = $($($_.split(",")[0].replace('<TTL=','').replace('>','')));
+            $Split = $_.Split(",");
+            $TTLmemberDN = $_.Split(",")[1..$($Split.Count - 1)] -join ',';
+            $Object = Get-ADObject -Identity $TTLmemberDN -Properties samaccountname;
+            Write-Host "Account " -NoNewline -ForegroundColor Cyan; Write-Host $($Object.samaccountname) -NoNewline -ForegroundColor Green; Write-Host -NoNewline " ($TTLmemberDN) has " -ForegroundColor Cyan; Write-Host -NoNewline $([math]::Round($SecondsLeft/60,1)) -ForegroundColor Yellow; Write-Host -NoNewline " minutes ($SecondsLeft seconds) until its membership expires in group $GroupName <$GroupDN> (Category: $GroupCategory).`n" -ForegroundColor Cyan;
+            
+            # prepare report object
+            $ReportObj = New-Object psobject;
+            Add-Member -InputObject $ReportObj -MemberType NoteProperty -Name GroupName -Value $GroupName -Force;
+            Add-Member -InputObject $ReportObj -MemberType NoteProperty -Name GroupCategory -Value $GroupCategory -Force;
+            Add-Member -InputObject $ReportObj -MemberType NoteProperty -Name GroupDN -Value $GroupDN -Force;
+            Add-Member -InputObject $ReportObj -MemberType NoteProperty -Name Member -Value $($Object.samaccountname) -Force;
+            Add-Member -InputObject $ReportObj -MemberType NoteProperty -Name MemberDN -Value $TTLmemberDN -Force;
+            Add-Member -InputObject $ReportObj -MemberType NoteProperty -Name TTLseconds -Value $SecondsLeft -Force;
+            Add-Member -InputObject $ReportObj -MemberType NoteProperty -Name TTLminutes -Value $([math]::Round($SecondsLeft/60,1)) -Force;
+            Add-Member -InputObject $ReportObj -MemberType NoteProperty -Name TTLhours -Value $([math]::Round($SecondsLeft/3600,1)) -Force;
+            $TemporaryMembers += $ReportObj;
+            Clear-Variable SecondsLeft, Split, TTLmemberDN, Object
+        }
+    }
+  }
+}
+
+# See if any temporary members were found
+$DomainFQDN = (Get-ADDomainController -Discover).Domain.ToUpper();
+
+if ($TemporaryMembers)
+    {
+        $TemporaryMembers | Out-GridView -Title "Temporary Group Members in domain $DomainFQDN"
+    }
+else
+    {
+        Write-Host "`n[!] No temporary members found in domain $DomainFQDN." -ForegroundColor Cyan
     }
 }
