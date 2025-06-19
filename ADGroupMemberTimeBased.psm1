@@ -352,3 +352,93 @@ else
         Write-Host "`n[!] No temporary members found in domain $DomainFQDN." -ForegroundColor Cyan
     }
 }
+
+Function Add-ADGroupMemberTimeBased_GUI {
+# Add-ADGroupMemberTimeBased GUI version by Adi Machluf 
+# version 1.0
+Add-Type -AssemblyName System.Windows.Forms;
+Add-Type -AssemblyName System.Drawing;
+
+# Create Form
+$form = New-Object System.Windows.Forms.Form;
+$form.Text = "Mini-PAM GUI";
+$form.Size = New-Object System.Drawing.Size(400,250);
+$form.StartPosition = "CenterScreen";
+
+# GroupName Label and TextBox
+$labelGroup = New-Object System.Windows.Forms.Label;
+$labelGroup.Text = "Group Name:";
+$labelGroup.Location = New-Object System.Drawing.Point(10,20);
+$labelGroup.Size = New-Object System.Drawing.Size(100,20);
+$form.Controls.Add($labelGroup);
+
+$textGroup = New-Object System.Windows.Forms.TextBox;
+$textGroup.Location = New-Object System.Drawing.Point(120,20);
+$textGroup.Size = New-Object System.Drawing.Size(250,20);
+$form.Controls.Add($textGroup);
+
+# SamAccountName Label and TextBox
+$labelUser = New-Object System.Windows.Forms.Label;
+$labelUser.Text = "SamAccountName:";
+$labelUser.Location = New-Object System.Drawing.Point(10,60);
+$labelUser.Size = New-Object System.Drawing.Size(100,20);
+$form.Controls.Add($labelUser);
+
+$textUser = New-Object System.Windows.Forms.TextBox;
+$textUser.Location = New-Object System.Drawing.Point(120,60);
+$textUser.Size = New-Object System.Drawing.Size(250,20);
+$form.Controls.Add($textUser);
+
+# TTL Label and TextBox
+$labelTTL = New-Object System.Windows.Forms.Label;
+$labelTTL.Text = "TTL (minutes):";
+$labelTTL.Location = New-Object System.Drawing.Point(10,100);
+$labelTTL.Size = New-Object System.Drawing.Size(100,20);
+$form.Controls.Add($labelTTL);
+
+$textTTL = New-Object System.Windows.Forms.TextBox;
+$textTTL.Location = New-Object System.Drawing.Point(120,100);
+$textTTL.Size = New-Object System.Drawing.Size(250,20);
+$form.Controls.Add($textTTL);
+
+# Submit Button
+$button = New-Object System.Windows.Forms.Button;
+$button.Text = "Add Time-Based Member";
+$button.Location = New-Object System.Drawing.Point(120,140);
+$button.Size = New-Object System.Drawing.Size(180,30);
+$form.Controls.Add($button);
+
+# Result label
+$labelResult = New-Object System.Windows.Forms.Label;
+$labelResult.Location = New-Object System.Drawing.Point(10,180);
+$labelResult.Size = New-Object System.Drawing.Size(360,40);
+$form.Controls.Add($labelResult);
+
+# Action on Click
+$button.Add_Click({
+    $group = $textGroup.Text;
+    $user = $textUser.Text;
+    $ttl = $textTTL.Text;
+
+    if (-not ($group -and $user -and $ttl)) {
+        $labelResult.Text = "Please fill in all fields.";
+        return
+    }
+
+    try {
+        Import-Module ActiveDirectory -ErrorAction Stop;
+
+        Add-ADGroupMember -Identity $group -Members $user -MemberTimeToLive (New-TimeSpan -Minutes $ttl);
+
+        $labelResult.Text = "User added temporarily to group.";
+    }
+    catch {
+        $labelResult.Text = "Error: $($_.Exception.Message)"
+    }
+})
+
+# Show the GUI
+$form.Topmost = $true;
+$form.Add_Shown({$form.Activate()});
+[void]$form.ShowDialog()
+}
