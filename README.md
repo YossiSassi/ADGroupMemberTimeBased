@@ -1,12 +1,18 @@
 # ADGroupMemberTimeBased
 a <b>PowerShell module for managing Time-Based Group Membership - Add/Get temporary group members</b>.<br>
-This set of bundled cmdlets allows you to perform 'Privileged Access Management' with temporary/time-based group membership tasks (account is automatically removed from the group after XX minutes). Sort of a 'Simple Living-off-the-land PAM', harnessing Active Directory's TTL group membership optional feature</b>.
-Includes functions to test the pre-requisites, add a TTL member to a group and get expiration information of temporary member(s), for a specific group or the entire groups in the AD domain.<br><BR>
+This set of bundled cmdlets allows you to perform 'Privileged Access Management' with temporary/time-based group membership tasks (account is automatically removed from the group after XX minutes *). Sort of a 'Simple Living-off-the-land PAM', harnessing Active Directory's TTL group membership optional feature</b>.
+Includes functions to test the pre-requisites, add a TTL member to a group and get expiration information of temporary member(s), for a specific group or the entire groups in the AD domain.<br>
+*<b> Note:</b> Technically, you could set the TTL for X seconds, or even Hours. you could easily change it inside the script.<br><br>
+By default, this feature is not enabled. You need to Enable it Forest-Wide. The script(s) provide the option to Enable the feature. You also need to have Domain/Forest functional level of Windows 2016 or higher. The script(s) also verifies those conditions are met.<br><BR>
 The module includes 4 functions / cmdlets:<br>
 The cmdlets <b>Test-ADGroupMemberTimeBasedPreRequisites</b>, <b>Get-ADGroupMemberTimeBased</b> and <b>Get-ADGroupMemberTimeBasedReport</b> do not require special permissions.<br>
 The cmdlet <b>Add-ADGroupMemberTimeBased</b> requires permissions to add member to the specified group.<br><br>
+To begin using the cmdlets inside the module, you'll need first to import it, of course:
+```
+Import-Module .\ADGroupMemberTimeBased.psm1
+```
 ## Test-ADGroupMemberTimeBasedPreRequisites
-<BR>The function validates the pre-requisites in the domain and forest/Configuration-wide, before you can add a time-based group member.<br>
+<BR>This command validates the pre-requisites in the domain and forest/Configuration-wide, before you can add a time-based group member.<br>
 It checks domain & forest functional levels and verifies that 'Privileged Access Management Feature' is enabled.<br>
 It can also optionally Enable the 'Privileged Access Management' Feature forest-wide.<br>
 <br>
