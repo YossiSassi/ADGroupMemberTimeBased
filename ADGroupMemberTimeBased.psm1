@@ -37,15 +37,18 @@ $UnsupportedModes | foreach {
         }
 }
 
+# Continue with supported Forest Functional level
+Write-Host "[x] Forest Functional Level '$ForestMode' is Ok for Time-Based group membership operations." -ForegroundColor Green
+
 $UnsupportedModes | foreach {
     if ($DomainMode -like "*$_*") {
-            Write-Host "[!] Forest Functional Level '$DomainMode' does Not support Time-Based Group membership." -ForegroundColor Yellow;
+            Write-Host "[!] Domain Functional Level '$DomainMode' does Not support Time-Based Group membership." -ForegroundColor Yellow;
             break
         }
 }
 
-# Continue with supported Forest Functional level
-Write-Host "[x] Forest Functional Level '$ForestMode' is Ok for Time-Based group membership operations." -ForegroundColor Green
+# Continue with supported Domain Functional level
+Write-Host "[x] Domain Functional Level '$DomainMode' is Ok for Time-Based group membership operations." -ForegroundColor Green
 
 # Check if PAM optional feature is enabled
 $PAMstatus = Get-ADOptionalFeature -filter "name -eq 'privileged access management feature'";
@@ -130,15 +133,18 @@ $UnsupportedModes | foreach {
         }
 }
 
+# Continue with supported Forest Functional level
+Write-Host "[x] Forest Functional Level '$ForestMode' is Ok for Time-Based group membership operations." -ForegroundColor Green
+
 $UnsupportedModes | foreach {
     if ($DomainMode -like "*$_*") {
-            Write-Host "[!] Forest Functional Level '$DomainMode' does Not support Time-Based Group membership." -ForegroundColor Yellow;
+            Write-Host "[!] Domain Functional Level '$DomainMode' does Not support Time-Based Group membership." -ForegroundColor Yellow;
             break
         }
 }
 
-# Continue with supported Forest Functional level
-Write-Host "[x] Forest Functional Level '$ForestMode' is Ok for Time-Based group membership operations." -ForegroundColor Green
+# Continue with supported Domain Functional level
+Write-Host "[x] Domain Functional Level '$DomainMode' is Ok for Time-Based group membership operations." -ForegroundColor Green
 
 # Check if PAM optional feature is enabled
 $PAMstatus = Get-ADOptionalFeature -filter "name -eq 'privileged access management feature'";
@@ -146,7 +152,7 @@ $PAMstatus = Get-ADOptionalFeature -filter "name -eq 'privileged access manageme
 if ($PAMstatus.EnabledScopes.length -lt 1) {
 	Write-Host "[!] PAM Optional Feature is Not enabled.`n" -ForegroundColor Yellow;
 
-	# Suggest how to Enable feature if Domain/Forest levels are OK
+	# Suggest to Enable feature if Domain/Forest levels are OK
     $ForestFQDN = $((Get-ADDomain).Forest);
     $choice = Read-Host "[?] Do you want to Enable 'Privileged Access Management Feature' for the entire $ForestFQDN Forest?`n(YES to Continue, any other key to skip)";
 
