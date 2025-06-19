@@ -44,9 +44,9 @@ Add-ADGroupMemberTimeBased -GroupName "domain admins" -MemberSamAccountName Moni
 Get all temporary group members in the domain (shows just 1 account). Then add user JaneD to the distribution group "Dev_Email" for 10 minutes. Then run the report of temporary group members again (showing 2 accounts).<br>
 ![Sample results](/screenshots/adgroupmembertimebased_ss2.png) <br><br>
 ### Add-ADGroupMemberTimeBased_GUI
-<br>The GUI based version (thanks to Adi Machluf for the initiative!) to add a Time-Based Group Member, the 'Mini-PAM' GUI simple windows form.<br>
+<br>The GUI based version (thanks to Adi Machluf for the initiative!) to add a Time-Based Group Member, the 'Mini-PAM' GUI, based on windows form.<br>
 Note that this function assumes that the forest-wide pre-requisites are met. It simply adds a time-based member to a group :wink:<br>
-Simply launch the GUI by running the command:<br>
+Just launch the GUI by running the command:<br>
 ```
 Add-ADGroupMemberTimeBased_GUI
 ```
