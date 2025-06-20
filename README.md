@@ -1,5 +1,5 @@
 # ADGroupMemberTimeBased
-###  (aka 'Mini-PAM')
+###  (aka 'Mini-PAM') ⏳💻
 a <b>PowerShell module for managing Time-Based Group Membership - Add/Get temporary group members</b>.<br>
 This set of bundled cmdlets allows you to perform 'Privileged Access Management' with temporary/time-based group membership tasks (account is automatically removed from the group after XX minutes *). Sort of a 'Simple Living-off-the-land PAM', harnessing Active Directory's TTL group membership optional feature</b>.
 Includes functions to test the pre-requisites, add a TTL member to a group and get expiration information of temporary member(s), for a specific group or the entire groups in the AD domain.<br>
@@ -73,4 +73,12 @@ Get all temporary group members in all Active Directory groups in the domain:<br
 ```
 Get-ADGroupMemberTimeBasedReport
 ```
-![Sample results](/screenshots/adgroupmembertimebased_ss5.png) <br><br>
+![Sample results](/screenshots/adgroupmembertimebased_ss5.png) <br>
+
+### Some final thoughts about detection (and Forensic investigations)
+The addition (and especially removal/'disappearing') of temporary group members can be a particularly elusive operation for SecOps.<BR>
+For example: if you add a non-privileged member to 'Domain Admins' for 5 minutes - and even perform some privileged tasks with that account - the account won't receive admincount=1, and the removal won't appear in monitoring products, only the add to group.<br><br>
+So while at it - I updated my forensic investigation script <b>Get-ADGroupChanges</b> for getting add/remove history of group members in all AD groups, since the dawn of your domain :wink:<br>
+v1.5.3 of Get-ADGroupChanges includes identifying temporary members (TTL operations) - It took a small research since removal does not appear in logs, AND no replication metadata value of RemoveDate exists. The updated tool identifies there was an addition of temporary member that expired - See <b><a title="Get-ADGroupChanges - https://github.com/YossiSassi/Get-ADGroupChanges" href="https://github.com/YossiSassi/Get-ADGroupChanges" target="_blank">Get-ADGroupChanges - https://github.com/YossiSassi/Get-ADGroupChanges</a></b>)<BR><BR>
+<b>NOTE:</b> Get-ADGroupChanges is part of the <b><a title="Hacktive Directory Forensics Toolkit" href="https://github.com/YossiSassi/hAcKtive-Directory-Forensics" target="_blank">Hacktive Directory Forensics Toolkit</a></b> which you should check, if you haven't already done so.<br>
+🙉🙈🙊
