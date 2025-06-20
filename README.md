@@ -3,7 +3,7 @@
 a <b>PowerShell module for managing Time-Based Group Membership - Add/Get temporary group members</b>.<br>
 This set of bundled cmdlets allows you to perform 'Privileged Access Management' with temporary/time-based group membership tasks (account is automatically removed from the group after XX minutes *). Sort of a 'Simple Living-off-the-land PAM', harnessing Active Directory's TTL group membership optional feature</b>.
 Includes functions to test the pre-requisites, add a TTL member to a group and get expiration information of temporary member(s), for a specific group or the entire groups in the AD domain.<br>
-*<b> Note:</b> Technically, you could set the TTL for X seconds, or even Hours. you could easily change it inside the script.<br><br>
+*<b> Note:</b> Technically, you can set the TTL for X seconds, or even Hours. It's fairly easy to change it inside the script.<br><br>
 By default, this feature is not enabled. You need to Enable it Forest-Wide. The script(s) provide the option to Enable the feature. You also need to have Domain/Forest functional level of Windows 2016 or higher. The script(s) also verifies those conditions are met.<br><BR>
 The module includes 5 functions / cmdlets:<br>
 The cmdlets <b>Test-ADGroupMemberTimeBasedPreRequisites</b>, <b>Get-ADGroupMemberTimeBased</b> and <b>Get-ADGroupMemberTimeBasedReport</b> do not require special permissions.<br>
