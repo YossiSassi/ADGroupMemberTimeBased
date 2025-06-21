@@ -77,7 +77,21 @@ Get-ADGroupMemberTimeBasedReport
 
 ### Some Final Thoughts about Detection (and Forensic Investigations)
 The addition (and especially removal/'disappearing') of temporary group members can be a particularly elusive operation for SecOps.<BR><b>There is No Remove operation, since it is never removed, it expires.</b> That's the tricky part.<br>
-For example: if you add a non-privileged member to 'Domain Admins' for 5 minutes - and even perform some privileged tasks with that account - the account won't update its AdminCount attribute value to 1, and the removal may not appear in commercial monitoring products, nor in the logs - just the add to group operation. It took a small research, since event ID 4757 (user removed from group) does not exist in the logs for TTL members AND no replication metadata value exists for DateRemoved field. You'd have to hunt for eid 4756 (member added to group) where the MembershipExpirationTime field exists, or analyze replication metadata in a specific way.<br><br>
+For example: if you add a non-privileged member to 'Domain Admins' for 5 minutes - and even perform some privileged tasks with that account - the account won't update its AdminCount attribute value to 1, and the removal may not appear in commercial monitoring products, nor in the logs - just the add to group operation. It took a small research, since event ID 4757 (user removed from group) does not exist in the logs for TTL members AND no replication metadata value exists for DateRemoved field. You'd have to hunt for eid 4756 (member added to group) where the MembershipExpirationTime field exists **, or analyze replication metadata in a specific way.<br><br>
 So while at it - I updated my forensic investigation script <b>Get-ADGroupChanges</b> for getting add/remove history of group members in all AD groups, since the dawn of your domain :wink:<br>
 v1.5.3 of Get-ADGroupChanges includes identifying temporary members (TTL operations) - The updated tool identifies any addition of temporary members that expired - at any point in time - per group, per user or for all the domain. Check it out, for both online DCs and offline ntds.dit backups: <b><a title="Get-ADGroupChanges - https://github.com/YossiSassi/Get-ADGroupChanges" href="https://github.com/YossiSassi/Get-ADGroupChanges" target="_blank">Get-ADGroupChanges - https://github.com/YossiSassi/Get-ADGroupChanges</a></b>)<BR><BR>
-<b>NOTE:</b> Get-ADGroupChanges is part of the <b><a title="Hacktive Directory Forensics Toolkit" href="https://github.com/YossiSassi/hAcKtive-Directory-Forensics" target="_blank">Hacktive Directory Forensics Toolkit</a></b> which you should probably check out, especially if you're into SecOps/DF/IR. 🙉🙈🙊
+<b>NOTE:</b> Get-ADGroupChanges is part of the <b><a title="Hacktive Directory Forensics Toolkit" href="https://github.com/YossiSassi/hAcKtive-Directory-Forensics" target="_blank">Hacktive Directory Forensics Toolkit</a></b> which you should probably check out, especially if you're into SecOps/DF/IR. 🙉🙈🙊 <br><br>
+** NOTE: You'll need to enable proper auditing events on DCs for Security Groups Management and Distribution Group Management.<br>
+a potential xPath filter to hunt for a member was added to an AD group with an expiration date can be:
+```
+<QueryList>
+  <Query Id="0" Path="Security">
+    <Select Path="Security">
+      *[System[(EventID=4751 or EventID=4756)]]
+      and
+      *[EventData[Data[@Name='MembershipExpirationTime']]]
+    </Select>
+  </Query>
+</QueryList>
+```
+
