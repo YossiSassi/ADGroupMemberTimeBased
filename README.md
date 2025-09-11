@@ -82,7 +82,7 @@ So while at it - I updated my forensic investigation script <b>Get-ADGroupChange
 v1.5.3 of Get-ADGroupChanges includes identifying temporary members (TTL operations) - The updated tool identifies any addition of temporary members that expired - at any point in time - per group, per user or for all the domain. Check it out, for both online DCs and offline ntds.dit backups: <b><a title="Get-ADGroupChanges - https://github.com/YossiSassi/Get-ADGroupChanges" href="https://github.com/YossiSassi/Get-ADGroupChanges" target="_blank">Get-ADGroupChanges - https://github.com/YossiSassi/Get-ADGroupChanges</a></b>)<BR><BR>
 <b>NOTE:</b> Get-ADGroupChanges is part of the <b><a title="Hacktive Directory Forensics Toolkit" href="https://github.com/YossiSassi/hAcKtive-Directory-Forensics" target="_blank">Hacktive Directory Forensics Toolkit</a></b> which you should probably check out, especially if you're into SecOps/DF/IR. 🙉🙈🙊 <br><br>
 ** NOTE: You'll need to enable proper auditing events on DCs for Security Groups Management and Distribution Group Management.<br>
-a potential xPath filter to hunt for a member was added to an AD group with an expiration date can be:
+a potential xml filter to hunt for a member was added to an AD group with an expiration date can be:
 ```
 <QueryList>
   <Query Id="0" Path="Security">
